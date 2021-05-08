@@ -1,0 +1,1202 @@
+ GetTypeData 函数
+===============================================================================
+GetTypeData 函数根据 TTypeInfo 指针获得 TTypeData 的地址。
+
+function GetTypeData(TypeInfo: PTypeInfo): PTypeData;
+asm
+       XOR    EDX,EDX                          ; EDX 清零
+       MOV    DL,[EAX].TTypeInfo.Name.Byte[0]  ; 获得 Name 字符串长度
+       LEA    EAX,[EAX].TTypeInfo.Name[EDX+1]  ; 获得 TTypeData 的地址
+end;
+
+===============================================================================
+ GetPropInfo 函数
+===============================================================================
+GetPropInfo 函数用于获得属性的 RTTI 指针 PPropInfo。它有四种重载形式，后面三种重载的实现都是调用第一种形式。AKinds 参数用于限制属性的类型，如果得到的 PPropInfo 不属于指定的类型，则返回 nil。
+
+  function GetPropInfo(TypeInfo: PTypeInfo; const PropName: string): PPropInfo;
+
+  function GetPropInfo(Instance: TObject; const PropName: string;
+    AKinds: TTypeKinds = []): PPropInfo;
+  function GetPropInfo(AClass: TClass; const PropName: string;
+    AKinds: TTypeKinds = []): PPropInfo;
+  function GetPropInfo(TypeInfo: PTypeInfo; const PropName: string;
+    AKinds: TTypeKinds): PPropInfo;
+
+===============================================================================
+ FindPropInfo 函数
+===============================================================================
+FindPropInfo 函数根据属性名称获得属性的 RTTI 指针，它只是在 GetPropInfo 函数的基础上加上了错误检查功能，如果没有属性 RTTI 信息，则触发 EPropertyError 异常。
+
+function FindPropInfo(Instance: TObject; const PropName: string): PPropInfo;
+function FindPropInfo(AClass: TClass; const PropName: string): PPropInfo;
+
+===============================================================================
+ GetPropInfos 函数
+===============================================================================
+GetPropInfos 函数的功能是把一个类(class)所有属性 RTTI 指针 PPropInfo 填充至传入的参数 PPropList 数组中。
+
+注意：这个函数不负责分配该数组的内容，使用前必须根据属性的数量分配足够的空间。该数组结束后必须清除分配的内容。
+
+  procedure GetPropInfos(TypeInfo: PTypeInfo; PropList: PPropList);
+
+注：使用 GetPropList 实现相同的功能更方便。
+
+===============================================================================
+ SortPropList 函数
+===============================================================================
+SortPropList 可以对 GetPropInfos 函数填充的属性信息指针数组按属性名称排序。
+
+  procedure SortPropList(PropList: PPropList; PropCount: Integer);
+
+在 VCL 中 SortPropList 只被 GetPropList 函数使用。
+
+===============================================================================
+ GetPropList 函数
+===============================================================================
+GetPropList 函数同 GetPropInfos 一样，填充 PPropList 数组。GetPropList 实际上是调用 GetPropInfos 进行填充工作，最后返回已填充的属性的数量。
+
+  function GetPropList(TypeInfo: PTypeInfo; TypeKinds: TTypeKinds;
+    PropList: PPropList; SortList: Boolean): Integer;
+
+  function GetPropList(TypeInfo: PTypeInfo; out PropList: PPropList): Integer;
+  function GetPropList(AObject: TObject; out PropList: PPropList): Integer;
+
+注意：GetPropList 的内存分配有点混乱，上面第一个 GetPropList 必须自己分配 PPrpList 数组的内存，后面二个 GetPropList 会自动分配 PPropList 数组的内存。造成这种情况的原因是：第一个 GetPropList 可以设置 TypeKinds 参数限制只返回指定类型的属性，这样就不能直接得到可能返回的属性数量。TypeKinds 参数可以设置为 tkAny，表示返回所有数据类型的属性。
+
+第一个 GetPropList 函数可以设置 SortList 参数对属性名称进行排序。它实际上是调用第二个 GetPropList 并调用 SortPropList 函数执行排序。
+
+注意：PPropList 不再使用的时候，要记得使用 FreeMem 函数清除数组内存(根据返回值是否大于1)。
+
+===============================================================================
+ GetObjectPropClass 函数
+===============================================================================
+GetObjectPropClass 函数用于返回对象类型的属性所属的类(class)。
+
+  function GetObjectPropClass(Instance: TObject; PropInfo: PPropInfo): TClass;
+  function GetObjectPropClass(Instance: TObject; const PropName: string): TClass;
+  function GetObjectPropClass(PropInfo: PPropInfo): TClass;
+
+这个函数被 SetObjectProp 函数使用，用于参数检验。
+
+===============================================================================
+ PropType / PropIsType 函数
+===============================================================================
+PropType 函数用于获得属性的数据类型。
+
+  function PropType(Instance: TObject; const PropName: string): TTypeKind;
+  function PropType(AClass: TClass; const PropName: string): TTypeKind;
+
+PropIsType 判断属性是否属于某种数据类型。它调用 PropType 实现功能。
+
+  function PropIsType(Instance: TObject; const PropName: string;
+    TypeKind: TTypeKind): Boolean;
+  function PropIsType(AClass: TClass; const PropName: string;
+    TypeKind: TTypeKind): Boolean;
+
+===============================================================================
+ IsPublishedProp 函数
+===============================================================================
+IsPublishedProp 函数用于判断属性是否是 published 属性，它通过检查该属性 RTTI 指针是否等于 nil 来实现功能。
+
+  function IsPublishedProp(Instance: TObject; const PropName: string): Boolean;
+  function IsPublishedProp(AClass: TClass; const PropName: string): Boolean;
+
+IsPublishedProp 函数没有被 VCL 使用。
+
+===============================================================================
+ IsStoredProp 函数
+===============================================================================
+IsStoredProp 函数使用属性信息中的 TPropInfo.StoredProp 函数指针来调用属性定义时用 stored 关键字定义的函数的结果。
+
+这个函数被用于 Delphi 持续机制，TWriter.WriteProperties 方法调用 IsStoredProp 判断是否需要把该属性的值写入流中。
+
+  function IsStoredProp(Instance: TObject; PropInfo: PPropInfo): Boolean;
+  function IsStoredProp(Instance: TObject; const PropName: string): Boolean;
+
+===============================================================================
+ FreeAndNilProperties 函数
+===============================================================================
+FreeAndNilProperties 函数用于清除一个对象的所有 published 的对象类型的属性的对象。这个函数调用 GetObjectProp 执行获得对象属性的对象句柄，并调用对象的 Free 方法清除这个对象，然后调用 SetObjectProp 设置该属性为 nil。
+
+  procedure FreeAndNilProperties(AObject: TObject);
+
+我不知道这个函数能用在哪里，至少 VCL 中没有使用这个函数。
+
+===============================================================================
+ SetToString / StringToSet 函数
+===============================================================================
+SetToString 和 StringToSet 是两个 RTTI 辅助函数，它们把集合值转换为字符串，或者把字符串转换为集合值。
+
+  function SetToString(PropInfo: PPropInfo; Value: Integer;
+    Brackets: Boolean = False): string;
+
+  function StringToSet(PropInfo: PPropInfo; const Value: string): Integer;
+
+注意：这里的集合值最多只能包含 32 个元素(4 bytes)，这是集合 RTTI 的限制。
+
+===============================================================================
+ GetEnumName / GetEnumValue / GetEnumNameValue 函数
+===============================================================================
+GetEnumName 函数根据枚举整数值返回枚举字符串。它可以返回以下三种枚举名称：
+
+  Integer：直接返回 IntToStr(Integer)
+  Boolean：返回 True/False
+  Enum   ：返回 TTypeData^.NameList 中存储的枚举名称
+
+  function GetEnumName(TypeInfo: PTypeInfo; Value: Integer): string;
+
+GetEnumValue 函数根据枚举字符串返回枚举整数值。它与 GetEnumName 类似，可以返回三种枚举的整数值，但对于 Enum 类型，它调用了 GetEnumNameValue 函数。
+
+  function GetEnumValue(TypeInfo: PTypeInfo; const Name: string): Integer;
+
+GetEnumNameValue 函数与 GetEnumValue 函数功能差不多，但它是个汇编函数，只能返回纯枚举类型的值。其工作原理也是匹配 TTypeData^.NameList 值。
+
+  function GetEnumNameValue(TypeInfo: PTypeInfo; const Name: string): Integer;
+
+注意：GetEnumNameValue 隐藏在 Implementation 段，不能直接使用，它是为 GetEnumValue 函数服务的。
+
+===============================================================================
+ GetOrdProp 函数详解
+===============================================================================
+GetOrdProp 是 Delphi RTTI 中使用频繁的函数。GetOrdProp 根据对象句柄和对象属性的 TPropInfo 指针获得对象的属性值。它的返回值是 Longint，需要强制转换成相应的属性类型才能使用。
+
+  function GetOrdProp(Instance: TObject; PropInfo: PPropInfo): Longint;
+
+GetOrdProp 调用 TPropInfo.GetProc 函数指针得到属性的返回值。它的工作过程是：
+
+  如果该属性的类型是 class 类型，那么返回值是 4 个字节(对象句柄)。
+    否则通过 TTypeData.OrdType 得到返回值的类型，存储在 BL 中。
+    { TOrdType = (otSByte, otUByte, otSWord, otUWord, otSLong, otULong); }
+  检查 TPropInfo.GetProc 的第一个字节(注意是 GetProc 指针的第一个字节)：
+    如果 GetProc[0] = FF，说明GetProc是fieldoffset；如果GetProc[0]=FE，说明 GetProc 是 virtual method offset；
+    如果 GetProc[0] < $FE，说明 GetProc 是 static method；
+  然后根据不同的 GetProc 类型解析后，调用 GetProc。
+  根据 BL 中存储的类型符号信息修正返回值(EAX)的符号信息。
+  根据 BL 中存储的类型的大小裁剪返回值 EAX 为 EAX/AX/AL。
+  EAX(AX/AL) 即是返回的属性值。
+
+GetOrdProp 的汇编代码及注释如下：
+
+function GetOrdProp(Instance: TObject; PropInfo: PPropInfo): Longint;
+asm
+       PUSH   EBX
+       PUSH   EDI
+       MOV    EDI,[EDX].TPropInfo.PropType       ; EDI <- PPTypeInfo
+       MOV    EDI,[EDI]                          ; EDI <- PTypeInfo
+       MOV    BL,otSLong                         ; BL  <- otSLong
+       CMP    [EDI].TTypeInfo.Kind,tkClass       ; if Prop is Class
+       JE     @@isClass                          ; jmp @@isClass
+       XOR    ECX,ECX                            ; ECX <- 0
+       MOV    CL,[EDI].TTypeInfo.Name.Byte[0]    ; CL  <- Name StrLength
+       MOV    BL,[EDI].TTypeInfo.Name[ECX+1].TTypeData.OrdType
+                                                   ; BL  <- Prop OrdType
+@@isClass:
+       MOV    ECX,[EDX].TPropInfo.GetProc        ; ECX <- GetProc Addr
+       CMP    [EDX].TPropInfo.GetProc.Byte[3],FE;cmpHiByte(GetProc),FE
+       MOV    EDX,[EDX].TPropInfo.Index          ; EDX <- Prop Index
+       JB     @@isStaticMethod                   ; if below FEJA@@isField;ifisFF
+
+       {      the GetProc is a virtual method }   ; if is FEMOVSXECX,CXsignextendslotoffsADDECX,[EAX]vmt+slotoffsCALLdwordptr[ECX]callvmt[slot]JMP@@final@@isStaticMethod:CALLECX;callGetProcdirectlyJMP@@final@@isField:ANDECX,00FFFFFF       ; clear HiByte(GetProc)
+       ADD    ECX,EAX             ; ECX <- Field Addr
+       MOV    AL,[ECX]            ; AL  <- Field Addr[0]
+       CMP    BL,otSWord          ; if OrdType < otSWord
+       JB     @@final             ; Exit
+       MOV    AX,[ECX]            ; else AX <- Field[0..1]
+       CMP    BL,otSLong          ; if OrdType < otSLong
+       JB     @@final             ; Exit
+       MOV    EAX,[ECX]           ; else EAX <- Field[0..3]
+@@final:
+       CMP    BL,otSLong          ; if OrdType >= otSLong
+       JAE    @@exit              ; Exit
+       CMP    BL,otSWord          ; if OrdType >= otSWord
+       JAE    @@word              ; jmp @@word
+       CMP    BL,otSByte          ; if OrdType = otSByte
+       MOVSX  EAX,AL              ; AL <- Sign(EAX)
+       JE     @@exit              ; Exit
+       AND    EAX,FF;clearHiWord(EAX)JMP@@exit;Exit@@word:MOVSXEAX,AX;AX<=Sign(EAX)JE@@exit;ifOrdType=otSWordthenExitANDEAX,FFFF           ; clear HiWord(EAX)
+@@exit:
+       POP    EDI
+       POP    EBX
+end;
+
+TypInfo.pas 中重载了 GetOrdProp 函数，将 PPropInfo 参数替换为 PropName，方便程序员调用，它其实也是调用了上面介绍的 GetOrdProp 函数。
+
+function GetOrdProp(Instance: TObject; const PropName: string): Longint;
+begin
+  Result := GetOrdProp(Instance, FindPropInfo(Instance, PropName));
+end;
+
+下面是使用 GetOrdProp 的例子：
+
+  Self.Width := Self.Width - GetOrdProp(Self, 'Height');
+
+上面的语句相当于：
+
+  Self.Width := Self.Width - Self.Height;
+
+* 后文介绍的 Get___Prop 系列函数或者调用本函数，或者它的实现方法与本函数类似。
+
+===============================================================================
+ SetOrdProp 函数
+===============================================================================
+SetOrdProp 函数是 GetOrdProp 的逆过程，它调用 TPropInfo.SetProc 函数指针设置对象的属性值。SetProc 指针的第一个字节的意义同 GetProc 一样，也是表示该 SetProc 是字段偏移、虚方法偏移和静态方法。
+
+  procedure SetOrdProp(Instance: TObject; PropInfo: PPropInfo; Value: Longint);
+
+SetOrdProc 也根据属性名称重载了：
+
+  procedure SetOrdProp(Instance: TObject; const PropName: string; Value: Longint);
+
+由于 SetOrdProp 的汇编代码与 GetOrdProp 的几乎一样，在此就不再列出。作为练习，试用一下：
+
+  SetOrdProp(Self, 'Height', Self.Height + 10);
+
+该语句的功能相当于：
+
+  Self.Height := Self.Height + 10;
+
+* 后文介绍的 Set___Prop 系列函数或者调用本函数，或者它的实现方法与本函数类似。
+
+===============================================================================
+ GetEnumProp / SetEnumProp 函数
+===============================================================================
+GetEnumProp 函数获取枚举类型属性的枚举字符串，它调用 GetEnumName 转换 GetOrdProp 的返回值。
+
+  function GetEnumProp(Instance: TObject; PropInfo: PPropInfo): string;
+  function GetEnumProp(Instance: TObject; const PropName: string): string;
+
+SetEnumProp 函数使用枚举字符串设置枚举类型属性值，它调用 GetEnumValue 转换枚举字符串后再调用 SetOrdProp 设置属性值。
+
+  procedure SetEnumProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: string);
+  procedure SetEnumProp(Instance: TObject; const PropName: string;
+    const Value: string);
+
+===============================================================================
+ GetSetProp / SetSetProp 函数
+===============================================================================
+GetSetProp 函数用于获取集合类型属性的字符串值，它也是调用 GetOrdProp 获得属性值，然后调用 SetToString 函数把数值转换成字符串。
+
+注意：GetOrdProp 函数返回值是 Integer，那么它是如何表示可以存储 256 个元素的集合类型呢？答案是：如果是 published 集合属性，那么该集合最大只能是 4 个字节，也就是最多只能存储 32 个元素。
+
+  function GetSetProp(Instance: TObject; PropInfo: PPropInfo;
+    Brackets: Boolean): string;
+  function GetSetProp(Instance: TObject; const PropName: string;
+    Brackets: Boolean = False): string;
+
+SetSetProp 函数用于通过字符串设置集合类型属性的值。它先调用 StringToSet 函数把字符串转换为整数值，然后使用 SetOrdProp 函数设置属性值。
+
+  procedure SetSetProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: string);
+  procedure SetSetProp(Instance: TObject; const PropName: string;
+    const Value: string);
+
+试验：  SetSetProp(Self, 'BorderIcons', '[biSystemMenu]');
+
+
+===============================================================================
+ GetObjectProp / SetObjectProp 函数
+===============================================================================
+对象实际上是指针，也就是整数值，所以 GetObjectProp 直接调用 GetOrdProp 就可以了。
+
+MinClass 参数指定得到的 Object 必须属于某个 class ，如果不是则返回 nil 。
+
+  function GetObjectProp(Instance: TObject; PropInfo: PPropInfo;
+    MinClass: TClass = nil): TObject;
+  function GetObjectProp(Instance: TObject; const PropName: string;
+    MinClass: TClass = nil): TObject;
+
+SetObjectProp 用于设置属性的对象句柄。ValidateClass 参数表示是否需要检查传入的对象类型与属性信息的类信息是否兼容。
+
+  procedure SetObjectProp(Instance: TObject; PropInfo: PPropInfo;
+    Value: TObject; ValidateClass: Boolean = True);
+  procedure SetObjectProp(Instance: TObject; const PropName: string;
+    Value: TObject);
+
+例子：
+  var
+    MyFont: TFont;
+  begin
+    MyFont := TFont.Create;
+   MyFont.Height :=  20;
+   SetObjectProp(Self, 'Font', MyFont);
+  end;
+
+===============================================================================
+ GetStrProp / SetStrProp 函数
+===============================================================================
+GetStrProp 函数用于获得字符串类型的属性值。
+
+  function GetStrProp(Instance: TObject; PropInfo: PPropInfo): string;
+  function GetStrProp(Instance: TObject; const PropName: string): string;
+
+由于 Delphi 支持三种类型的字符串，GetStrProp 根据字符串的类型，分别调用三个获得字符串属性值的函数：
+
+  case PropInfo^.PropType^.Kind of
+    tkString: GetShortStrPropAsLongStr(Instance, PropInfo, Result);
+    tkLString: GetLongStrProp(Instance, PropInfo, Result);
+    tkWString: GetWideStrPropAsLongStr(Instance, PropInfo, Result);
+  end;
+
+其中 GetShortStrPropAsLongStr 又调用了 GetShortStrProp；GetWideStrPropAsLongStr 又调用了 GetWideStrProp，进行字符串间的类型转换。
+
+SetStrProp 函数用于设置字符串类型的属性值。它的实现方法与 GetStrProp 类似。
+
+  procedure SetStrProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: string);
+  procedure SetStrProp(Instance: TObject; const PropName: string;
+    const Value: string);
+
+===============================================================================
+ GetFloatProp / SetFloatProp 函数
+===============================================================================
+GetFloatProp 用于获得浮点型属性值。它将 Single(4 bytes)、Double(8 bytes)、Comp(8 bytes)、Currency(8 bytes) 类型的浮点数属性转换为 Extented(10 bytes) 类型返回。
+
+  function GetFloatProp(Instance: TObject; PropInfo: PPropInfo): Extended;
+  function GetFloatProp(Instance: TObject; const PropName: string): Extended;
+
+SetFloatProp 用于设置浮点型属性值。它的实现方法与 GetFloatProp 类似。
+
+  procedure SetFloatProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: Extended);
+  procedure SetFloatProp(Instance: TObject; const PropName: string;
+    const Value: Extended);
+
+===============================================================================
+ GetVariantProp / SetVariantProp
+===============================================================================
+GetVariantProp 函数用于获得 Variant 类型的属性值。
+
+  function GetVariantProp(Instance: TObject; PropInfo: PPropInfo): Variant;
+  function GetVariantProp(Instance: TObject; const PropName: string): Variant;
+
+SetVariantProp 函数用于设置 Variant 类型的属性值。
+
+  procedure SetVariantProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: Variant);
+  procedure SetVariantProp(Instance: TObject; const PropName: string;
+    const Value: Variant);
+
+===============================================================================
+ GetMethodProp / SetMethodProp
+===============================================================================
+GetMethodProp 函数用于获得 Method 类型的属性值。
+
+  function GetMethodProp(Instance: TObject; PropInfo: PPropInfo): TMethod; 
+  function GetMethodProp(Instance: TObject; const PropName: string): TMethod;
+
+SetMethodProp 函数用于设置 Method 类型的属性值。
+
+  procedure SetMethodProp(Instance: TObject; const PropName: string;
+    const Value: TMethod);
+  procedure SetMethodProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: TMethod);
+
+===============================================================================
+ GetInt64Prop / SetInt64Prop
+===============================================================================
+SetInt64Prop 函数用于设置 Int64 类型的属性值。不同于一般整数用 EAX 返回，Int64 类型的返回值由 EDX:EAX 返回，所以有必要单独定义 Int64 的获取和设置方法。
+
+  function GetInt64Prop(Instance: TObject; PropInfo: PPropInfo): Int64;
+  function GetInt64Prop(Instance: TObject; const PropName: string): Int64;
+
+SetInt64Prop 函数用于设置 Int64 类型的属性值。
+
+  procedure SetInt64Prop(Instance: TObject; PropInfo: PPropInfo;
+    const Value: Int64);
+  procedure SetInt64Prop(Instance: TObject; const PropName: string;
+    const Value: Int64);
+
+===============================================================================
+ GetInterfaceProp / SetInterfaceProp 函数
+===============================================================================
+GetInterfaceProp 函数用于获得 Interface 类型的属性值。
+
+  function GetInterfaceProp(Instance: TObject; PropInfo: PPropInfo): IInterface;
+  function GetInterfaceProp(Instance: TObject; const PropName: string): IInterface;
+
+SetInterfaceProp 函数用于设置 Interface 类型的属性值。
+
+  procedure SetInterfaceProp(Instance: TObject; PropInfo: PPropInfo;
+    const Value: IInterface); 
+  procedure SetInterfaceProp(Instance: TObject; const PropName: string;
+    const Value: IInterface);
+
+* 不太熟悉 Interface，以后再看实现过程。
+
+===============================================================================
+ GetPropValue / SetPropValue 函数
+===============================================================================
+GetPropValue 函数用于获得任何类型的属性值，它返回 Variant 类型。
+
+注意，这个函数没有重载函数，只能使用属性名称字符串为参数。
+
+GetPropValue 先调用 GetPropInfo 函数获得属性的类型，然后根据属性的数据类型选择调用以上介绍的 GetOrdProp、GetEnumProp、GetSetProp、GetStrProp 等函数实现具体的功能。
+
+GetPropValue 的参数 PreferStrings 如果设置为 True，那么对于枚举、集合类型，将返回字符串值，否则返回整数值。GetPropValue 还可以返回动态数组类型的属性值。(目前对动态数组不太熟悉，先记下来。)
+
+  function GetPropValue(Instance: TObject; const PropName: string;
+   PreferStrings: Boolean): Variant;
+
+SetPropValue 函数用于设置任何类型的属性值。SetPropValue 的实现与 GetPropValue 类似。并且 SetPropValue 内部分析 Value 参数是否是字符串来设置枚举和集合类型的属性，所以不需要 PreferStrings 参数。SetPropValue 也可以设置动态数组属性，它使用了 SetOrdProp 函数实现这一功能，看来动态数组在内存中的表现是一个指针。
+
+  procedure SetPropValue(Instance: TObject; const PropName: string;
+    const Value: Variant);
+
+===============================================================================
+ TPublishableVariantType class
+===============================================================================
+在 TypInfo.pas 的代码注释中说 TPublishableVariantType 是用来代替 TCustomVariantType 以便更容易在 RTTI 中使用自定义的 Variant 类型。
+
+* 现在对这两个类型都不太了解，先记在这里以后再学。
+
+===============================================================================
+ RegisterClass / FindClass 系列函数 (Classes.pas)
+===============================================================================
+Delphi 提供了一种机制，可以使用类(class)的名称获得类(class VMTptr)。缺省情况下这些类必须是从 TPersistent 类继承下来的。使用这项功能之前必须在先把类信息注册到全局对象 RegGroup 中。
+
+RegisterClass 函数用于注册类信息至 RegGroup 中，注意该函数名称和 Win32 API 中注册窗口类的函数同名。如果类已经被注册过了，RegisterClass 将直接返回。如果有一个不同的类以相同的名称注册了，RegisterClass 将触发异常(EFilerError)。
+
+  procedure RegisterClass(AClass: TPersistentClass);
+
+RegisterClasses 函数可以方便地注册一批类：
+
+  procedure RegisterClasses(AClasses: array of TPersistentClass);
+
+RegisterClassAlias 函数可以为类以其它的名称注册，以避免名称冲突。
+
+  procedure RegisterClassAlias(AClass: TPersistentClass; const Alias: string);
+
+GetClass 函数根据类名称字符串获得类(class)，如果没找到，将返回 nil：
+
+  function GetClass(const AClassName: string): TPersistentClass;
+
+FindClass 函数包装了 GetClass，不同的是如果没找到该类，则触发异常(EClassNotFound)：
+
+  function FindClass(const ClassName: string): TPersistentClass;
+
+UnRegisterClass 系列函数执行 RegisterClass 相反的工作：
+
+  procedure UnRegisterClass(AClass: TPersistentClass);
+  procedure UnRegisterClasses(AClasses: array of TPersistentClass);
+  procedure UnRegisterModuleClasses(Module: HMODULE);
+
+缺省的 RegGroup 用于组织从 TPersistent 继承下来的类，下面五个函数可以设置自己的 RegGroup：
+
+  procedure StartClassGroup(AClass: TPersistentClass);
+  procedure GroupDescendentsWith(AClass, AClassGroup: TPersistentClass);
+  function ActivateClassGroup(AClass: TPersistentClass): TPersistentClass;
+  function ClassGroupOf(AClass: TPersistentClass): TPersistentClass; overload;
+  function ClassGroupOf(Instance: TPersistent): TPersistentClass; overload;
+
+===============================================================================
+ IdentToInt / IntToIdent 系列函数 (Classes.pas)
+===============================================================================
+IdentToInt 和 IntToIdent 函数用于实现字符串值和数值之间的转换。它的原理很简单，就是通过数组一一映射查找。不过一般不用直接使用这两个函数，而是使用 Delphi 中已经包装好的函数。这些函数的返回值都是 Boolean，表示转换是否成功。
+
+  function IdentToInt(const Ident: string; var Int: Longint;
+    const Map: array of TIdentMapEntry): Boolean;
+  function IntToIdent(Int: Longint; var Ident: string;
+    const Map: array of TIdentMapEntry): Boolean;
+
+  { Graphics.pas }
+  function CharsetToIdent(Charset: Longint; var Ident: string): Boolean;
+  function IdentToCharset(const Ident: string; var Charset: Longint): Boolean;
+
+  function ColorToIdent(Color: Longint; var Ident: string): Boolean;
+  function IdentToColor(const Ident: string; var Color: Longint): Boolean;
+
+  { Controls.pas }
+  function CursorToIdent(Cursor: Longint; var Ident: string): Boolean;
+  function IdentToCursor(const Ident: string; var Cursor: Longint): Boolean;
+
+例子：
+  var
+    NewColor: Integer;
+  begin
+    if IdentToColor('clWindow', NewColor) then
+     Self.Color := NewColor;
+  end;
+  
+===============================================================================
+ 结束
+===============================================================================
+
+ 
+
+通过 Rtti 单元的 TRttiContext(是个 record), 可以方便地获取类的方法、属性、字段的列表.
+
+
+unit Unit1; 
+ 
+interface 
+ 
+uses 
+ Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+ Dialogs, StdCtrls; 
+ 
+type 
+ TForm1 = class(TForm) 
+  Memo1: TMemo; 
+  Button1: TButton; 
+  Button2: TButton; 
+  Button3: TButton; 
+  Button4: TButton; 
+  Button5: TButton; 
+  procedure Button1Click(Sender: TObject); 
+  procedure Button2Click(Sender: TObject); 
+  procedure Button3Click(Sender: TObject); 
+  procedure Button4Click(Sender: TObject); 
+  procedure Button5Click(Sender: TObject); 
+ end; 
+ 
+var 
+ Form1: TForm1; 
+ 
+implementation 
+ 
+{$R *.dfm}  
+ 
+uses Rtti; 
+ 
+//TRttiContext.GetTypes 
+procedure TForm1.Button1Click(Sender: TObject); 
+var 
+ ctx: TRttiContext; 
+ t: TRttiType; 
+begin 
+ Memo1.Clear; 
+ for t in ctx.GetTypes do Memo1.Lines.Add(t.Name); 
+end; 
+ 
+//获取 TButton 类的方法 
+procedure TForm1.Button2Click(Sender: TObject); 
+var 
+ ctx: TRttiContext; 
+ t: TRttiType; 
+ m: TRttiMethod; 
+begin 
+ Memo1.Clear; 
+ t := ctx.GetType(TButton); 
+ //for m in t.GetMethods do Memo1.Lines.Add(m.Name); 
+ for m in t.GetMethods do Memo1.Lines.Add(m.ToString); 
+end; 
+ 
+//获取 TButton 类的属性 
+procedure TForm1.Button3Click(Sender: TObject); 
+var 
+ ctx: TRttiContext; 
+ t: TRttiType; 
+ p: TRttiProperty; 
+begin 
+ Memo1.Clear; 
+ t := ctx.GetType(TButton); 
+ //for p in t.GetProperties do Memo1.Lines.Add(p.Name); 
+ for p in t.GetProperties do Memo1.Lines.Add(p.ToString); 
+end; 
+ 
+//获取 TButton 类的字段 
+procedure TForm1.Button4Click(Sender: TObject); 
+var 
+ ctx: TRttiContext; 
+ t: TRttiType; 
+ f: TRttiField; 
+begin 
+ Memo1.Clear; 
+ t := ctx.GetType(TButton); 
+ //for f in t.GetFields do Memo1.Lines.Add(f.Name); 
+ for f in t.GetFields do Memo1.Lines.Add(f.ToString); 
+end; 
+ 
+//获取获取 TButton 类的方法集合、属性集合、字段集合 
+procedure TForm1.Button5Click(Sender: TObject); 
+var 
+ ctx: TRttiContext; 
+ t: TRttiType; 
+ ms: TArray<TRttiMethod>; 
+ ps: TArray<TRttiProperty>; 
+ fs: TArray<TRttiField>; 
+begin 
+ Memo1.Clear; 
+ t := ctx.GetType(TButton); 
+ 
+ ms := t.GetMethods; 
+ ps := t.GetProperties; 
+ fs := t.GetFields; 
+ 
+ Memo1.Lines.Add(Format('%s 类共有 %d 个方法', [t.Name, Length(ms)])); 
+ Memo1.Lines.Add(Format('%s 类共有 %d 个属性', [t.Name, Length(ps)])); 
+ Memo1.Lines.Add(Format('%s 类共有 %d 个字段', [t.Name, Length(fs)])); 
+end; 
+ 
+end. 
+
+ 
+
+通过 Rtti 还能够调用一个类的方法, 也能读取或设置其属性值.
+
+
+unit Unit1; 
+ 
+interface 
+ 
+uses 
+ Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+ Dialogs, StdCtrls; 
+ 
+type 
+ TForm1 = class(TForm) 
+  Button1: TButton; 
+  Button2: TButton; 
+  procedure Button1Click(Sender: TObject); 
+  procedure Button2Click(Sender: TObject); 
+ end; 
+ 
+ {自定义的类}  
+ TMyClass = class(TComponent) 
+ public 
+  procedure msg(const str: string); 
+  function Add(const a,b: Integer): Integer; 
+ end; 
+ 
+var 
+ Form1: TForm1; 
+ 
+implementation 
+ 
+{$R *.dfm} 
+ 
+uses Rtti; 
+ 
+{ MyClass 类的实现 -----------------------------------------------------------} 
+ 
+procedure TMyClass.msg(const str: string); 
+begin 
+ MessageDlg(str, mtInformation, [mbYes], 0); 
+end; 
+ 
+function TMyClass.Add(const a, b: Integer): Integer; 
+begin 
+ Result := a + b; 
+end; 
+ 
+//通过 Rtti 的手段使用 TMyClass 类的方法 -------------------------------------- 
+procedure TForm1.Button1Click(Sender: TObject); 
+var 
+ obj: TMyClass; 
+ t: TRttiType; 
+ m1,m2: TRttiMethod; 
+ r: TValue; //TRttiMethod.Invoke 的返回类型 
+begin 
+ t := TRttiContext.Create.GetType(TMyClass); 
+ 
+ {获取 TMyClass 类的两个方法} 
+ m1 := t.GetMethod('msg'); {procedure} 
+ m2 := t.GetMethod('Add'); {function} 
+ 
+ obj := TMyClass.Create(Self); {调用需要依赖一个已存在的对象} 
+ 
+ {调用 msg 过程} 
+ m1.Invoke(obj, ['Delphi 2010']); {将弹出信息框} 
+ 
+ {调用 Add 函数} 
+ r := m2.Invoke(obj, [1, 2]); {其返回值是个 TValue 类型的结构} 
+ ShowMessage(IntToStr(r.AsInteger)); {3} 
+ 
+ obj.Free; 
+end; 
+ 
+//通过 Rtti 的手段修改并获取 TMyClass 类的属性 -------------------------------- 
+procedure TForm1.Button2Click(Sender: TObject); 
+var 
+ obj: TMyClass; 
+ t: TRttiType; 
+ p: TRttiProperty; 
+ r: TValue; 
+begin 
+ obj := TMyClass.Create(Self); 
+ 
+ t := TRttiContext.Create.GetType(TMyClass); 
+ 
+ p := t.GetProperty('Name'); 
+ p.SetValue(obj, 'NewName'); 
+ 
+ r := p.GetValue(obj); 
+ ShowMessage(r.AsString); {NewName} 
+ 
+ obj.Free; 
+end; 
+ 
+end. 
+
+ 
+
+任何数据类型中 Rtti 中都有对应的获取信息的类, 有序类型对应的是 TRttiOrdinalType.
+
+
+unit Unit1; 
+ 
+interface 
+ 
+uses 
+ Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+ Dialogs, StdCtrls; 
+ 
+type 
+ TForm1 = class(TForm) 
+  Memo1: TMemo; 
+  Button1: TButton; 
+  procedure Button1Click(Sender: TObject); 
+ end; 
+ 
+var 
+ Form1: TForm1; 
+ 
+implementation 
+ 
+{$R *.dfm}  
+ 
+uses Rtti; 
+ 
+procedure TForm1.Button1Click(Sender: TObject); 
+var 
+ t: TRttiOrdinalType; 
+begin 
+ Memo1.Clear; 
+ 
+ //先从类型名获取类型信息对象 
+ t := TRttiContext.Create.GetType(TypeInfo(Byte)) as TRttiOrdinalType; 
+ Memo1.Lines.Add(Format('%s - %s', [t.Name, t.QualifiedName])); 
+ Memo1.Lines.Add(Format('Size: %d', [t.TypeSize])); 
+ Memo1.Lines.Add('QualifiedName: ' + t.QualifiedName); 
+ Memo1.Lines.Add(Format('Min,Max: %d , %d', [t.MinValue, t.MaxValue])); 
+ Memo1.Lines.Add(EmptyStr); //空字串 
+ 
+ //可以用 AsOrdinal 方法代替前面的 as TRttiOrdinalType 
+ t := TRttiContext.Create.GetType(TypeInfo(Word)).AsOrdinal; 
+ Memo1.Lines.Add(Format('%s: %s', [t.Name, t.QualifiedName])); 
+ Memo1.Lines.Add(Format('Size: %d', [t.TypeSize])); 
+ Memo1.Lines.Add(Format('Min,Max: %d , %d', [t.MinValue, t.MaxValue])); 
+ Memo1.Lines.Add(EmptyStr); 
+ 
+ //也可以直接强制转换 
+ t := TRttiOrdinalType(TRttiContext.Create.GetType(TypeInfo(Integer))); 
+ Memo1.Lines.Add(Format('%s: %s', [t.Name, t.QualifiedName])); 
+ Memo1.Lines.Add(Format('Size: %d', [t.TypeSize])); 
+ Memo1.Lines.Add(Format('Min,Max: %d , %d', [t.MinValue, t.MaxValue])); 
+ Memo1.Lines.Add(EmptyStr); 
+end; 
+ 
+end. 
+
+ 
+
+下面以 TPoint 为例, 用 TRttiRecordType 读取了结构的信息.
+
+
+unit Unit1; 
+ 
+interface 
+ 
+uses 
+ Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+ Dialogs, StdCtrls; 
+ 
+type 
+ TForm1 = class(TForm) 
+  Memo1: TMemo; 
+  Button1: TButton; 
+  procedure Button1Click(Sender: TObject); 
+ end; 
+ 
+var 
+ Form1: TForm1; 
+ 
+implementation 
+ 
+{$R *.dfm}  
+ 
+uses Rtti; 
+ 
+procedure TForm1.Button1Click(Sender: TObject); 
+var 
+ t: TRttiRecordType; 
+ f: TRttiField; 
+begin 
+ Memo1.Clear; 
+ t := TRttiContext.Create.GetType(TypeInfo(TPoint)).AsRecord; 
+ Memo1.Lines.Add(t.QualifiedName); 
+ Memo1.Lines.Add(Format('Size: %d', [t.TypeSize])); 
+ Memo1.Lines.Add(EmptyStr); 
+ 
+ Memo1.Lines.Add(Format('字段数: %d', [Length(t.GetFields)])); 
+ Memo1.Lines.Add(Format('方法数: %d', [Length(t.GetMethods)])); 
+ Memo1.Lines.Add(Format('属性数: %d', [Length(t.GetProperties)])); 
+ Memo1.Lines.Add(EmptyStr); 
+ 
+ Memo1.Lines.Add('全部字段:'); 
+ for f in t.GetFields do Memo1.Lines.Add(f.ToString); 
+end; 
+ 
+end. 
+
+ 
+
+方法的更多信息是指: 方法类型、返回值、参数等.
+
+
+unit Unit1; 
+ 
+interface 
+ 
+uses 
+ Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms, 
+ Dialogs, StdCtrls; 
+ 
+type 
+ TForm1 = class(TForm) 
+  Memo1: TMemo; 
+  Button1: TButton; 
+  procedure Button1Click(Sender: TObject); 
+ end; 
+ 
+var 
+ Form1: TForm1; 
+ 
+implementation 
+ 
+{$R *.dfm}  
+ 
+uses Rtti,TypInfo; 
+ 
+procedure TForm1.Button1Click(Sender: TObject); 
+var 
+ ms: TArray<TRttiMethod>; 
+ m: TRttiMethod; 
+ mps: TArray<TRttiParameter>; 
+ mp: TRttiParameter; 
+begin 
+ Memo1.Clear; 
+ 
+ {先获取方法集合, 这里随便使用了 TButton 类} 
+ ms := TRttiContext.Create.GetType(TButton).GetMethods; 
+ for m in ms do 
+ begin 
+  {方法名称} 
+  Memo1.Lines.Add('方法名称: ' + m.Name); 
+ 
+  {方法类型: proceedure、function 等} 
+  Memo1.Lines.Add('方法类型: ' + GetEnumName(TypeInfo(TMethodKind), Ord(m.MethodKind))); 
+ 
+  {方法的返回值类型} 
+  if Assigned(m.ReturnType) then 
+   Memo1.Lines.Add('返回值: ' + GetEnumName(TypeInfo(TTypeKind), Ord(m.ReturnType.TypeKind))); 
+ 
+  {方法的参数列表} 
+  mps := m.GetParameters; 
+  if Length(mps) > 0 then 
+  begin 
+   Memo1.Lines.Add('参数:'); 
+   for mp in mps do Memo1.Lines.Add(mp.ToString); 
+   //还可以通过 mp.ParamType 获取参数的数据类型 
+   //还可以通过 mp.Flags 获取参数的修饰符(譬如 var、const 等) 
+  end; 
+ 
+  Memo1.Lines.Add(EmptyStr); 
+ end; 
+end; 
+ 
+end. 
+
+运行期类型信息(RTTI)是一种语言特征，能使应用程序在运行时得到关于对象的信息。RTTI是Delphi的组件能够融合到IDE中的关键。它在IDE中不仅仅是一个纯学术的过程。
+   由于对象都是从TObject继承下来的，因此，对象都包含一个指向它们的RTTI的指针以及几个内建的方法。下面的表列出了TObject的一些方法，用这些方法能获得某个对象实例的信息。
+
+函数  	返回类型	返回值
+ClassName( )  	string	对象的类名
+ClassType()	boolean	对象的类型
+InheritsFrom	boolean    	判断对象是否继承于一个指定的类
+ClassParent()	TClass	对象的祖先类型
+Instancesize()	word	对象实例的长度(字节数)
+ClassInfo()	Pointer	指向RTTI的指针
+
+第一部分：关于as 和 is
+
+    Object Pascal提供了两个运算符as和is，用它们通过RTTI能对对象进行比较和强制类型转换。
+   关键字as是类型转换的一种新的形式。它能把一个基层的对象强制类型转换成它的派生类，如果转换不合法就产生一个异常。假定有一个过程，想让它能够传递任何类型的对象，它应该这样定义：
+    Procedure Foo(AnObject :Tobject);
+   在这个过程如果要对AnObject进行操作，要把它转换为一个派生对象。假定把AnObject看成是一个TEdit派生类型，并想要改变它所包含的文本，用下列代码： (AnObject as Tedit).text := 'wudi_1982';
+   能用比较运算符来判断两个对象是否是相兼容的类型，用is运算符把一个未知的对象和一个已知类型或实例进行比较，确定这个未知对象的属性和行为。例如，在对(AnObject 进行强制类型转换前，确定(AnObject 和TEdit是否指针兼容：
+
+    if (AnObject is Tedit) then
+    Tedit(AnObjject).text := 'wudi_1982';
+   注意在这个例子中不要再使用as进行强制类型转换，这是因为它要大量使用RTTI，另外还因为，在第一行已经判断Foo就是TEdit，可以通过在第2行进行指针转换来优化。
+
+   这两个操作符最典型的应用我想应该是在程序需要的部分清空窗体上所有edit的text属性
+
+procedure TForm1.ClearEdit(Acontrl: TWinControl);
+ var
+ i : integer;
+ begin
+    for i := 0 to Acontrl.ControlCount-1 do
+    begin
+       if Acontrl.Controls[i] is TEdit then
+         ((Acontrl.Controls[i]) as TEdit).Text := '';
+       if Acontrl.Controls[i] is TCustomControl then
+        ClearEdit( (Acontrl.Controls[i] as TCustomControl))
+    end;
+ end;
+ 
+
+第二部分：RTTI
+
+  上文中已经多次提到了RTTI，但好像并没有看到RTTI出现。那么RTTI是如何表现自己的呢？你将发现， RTTI至少在两个地方对你有用。第一个地方是DELPHI的IDE，这在前面已提到过。通过RTTI，IDE就会知道你正在使用的对象和组件的任何事情。实际上，不只是RTTI，但为了这个讨论，我们只谈RTTI方面。其实上面的as,is操作都间接的使用了RTTI。
+   还是用个例子来演示吧。在观看此例子之时，建议你看看typinfo.pas中的内容（DELPHI安装目录下\source\rtl\common\TypInfo.pas）；
+   下面的例子主要分为两部分，界面上半部分，主要演示通过rtti来显示用户选择类型的信息。（有3个TListBox）。
+   下面的部分主要通过RTTI来完成通过配置信息对控件进行属性的赋值操作，这里将演示文本类型和事件类型的赋值。
+    窗体文件如下：代码如下：
+
+{
+    作者:wudi_1982
+    联系方式:wudi_1982@hotmail.com
+    转载请注明出处
+ }
+ unit main;
+
+ interface
+
+ uses
+    Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, 
+
+ Forms,
+    Dialogs,typinfo, StdCtrls, ExtCtrls, Buttons;
+
+ type
+   InsertCom = record
+     Name : string; //要修改属性的组件名
+     PproName : string;//要修改控件的属性名
+     MethodName :string;//要修改or添加给控件的事件名
+     text : string; //属性值，这里修改的是string类型的数值
+   end;
+   TForm1 = class(TForm)
+     Panel1: TPanel;
+     GroupBox1: TGroupBox;
+     ListBox1: TListBox;
+     GroupBox2: TGroupBox;
+     GroupBox3: TGroupBox;
+     ListBox2: TListBox;
+     ListBox3: TListBox;
+     Panel2: TPanel;
+     edComName: TEdit;
+     Label2: TLabel;
+     Label3: TLabel;
+     edPproName: TEdit;
+     Label4: TLabel;
+     edValue: TEdit;
+     Panel3: TPanel;
+     btnInit: TButton;
+     btnModify: TButton;
+     GroupBox4: TGroupBox;
+     Label1: TLabel;
+     BitBtn1: TBitBtn;
+
+     procedure FormCreate(Sender: TObject);
+     procedure ListBox1Click(Sender: TObject);
+     procedure btnInitClick(Sender: TObject);
+     procedure btnModifyClick(Sender: TObject);
+   private
+     TestCom : InsertCom;
+     procedure MyClick(Sender : TObject); //给控件添加onclick事件
+   public
+     { Public declarations }
+    end;
+
+ var
+    Form1: TForm1;
+
+ implementation
+
+ {$R *.dfm}
+
+ function CreateClass(const AClassName : string):TObject;//根据名字生成
+ var
+    tm : TObject;
+    t : TFormClass;
+ begin
+     t := TFormClass(FindClass(AClassName));
+     tm := t.Create(nil);
+     Result := tm;
+ end;
+
+ procedure GetBaseClassInfo(AClass : TObject;AStrings : TStrings); //获
+
+ 得类型的基本信息
+ var
+    classTypeInfo : PTypeInfo;
+    ClassDataInfo : PTypeData;
+ begin
+    classTypeInfo := AClass.ClassInfo;
+    ClassDataInfo := GetTypeData(classTypeInfo);
+     with AStrings do
+    begin
+      Add(Format('name is :%s',[classTypeInfo.Name]));
+      Add(format('type kind is :%s',[GetEnumName(TypeInfo
+
+ (TTypeKind),integer(classTypeInfo.Kind))]));
+      Add(Format('in : %s',[ClassDataInfo.UnitName]));
+    end;
+ end;
+
+ procedure GetBaseClassPro(AClass : TObject;Astrings : TStrings); //获
+
+ 得属性信息
+ var
+    NumPro : integer; //用来记录事件属性的个数
+   Pplst : PPropList; //存放属性列表
+   Classtypeinfo : PTypeInfo;
+    classDataInfo: PTypeData;
+    i : integer;
+ begin
+    Classtypeinfo := AClass.ClassInfo;
+    classDataInfo := GetTypeData(Classtypeinfo);
+   if classDataInfo.PropCount <> 0 then
+    begin
+     //分配空间
+     GetMem(Pplst,sizeof(PpropInfo)*classDataInfo.PropCount);
+     try
+       //获得属性信息到pplst
+       GetPropInfos(AClass.ClassInfo,Pplst);
+       for I := 0 to classDataInfo.PropCount - 1 do
+         begin
+           if Pplst[i]^.PropType^.Kind <> tkMethod then
+           //这里过滤掉了事件属性
+             Astrings.Add(Format('%s:%s',[Pplst[i]^.Name,Pplst[i]
+
+ ^.PropType^.Name]));
+         end;
+         //获得事件属性
+         NumPro := GetPropList(AClass.ClassInfo,[tkMethod],Pplst);
+         if NumPro <> 0 then
+         begin
+           //给列表添加一些标志
+           Astrings.Add('');
+           Astrings.Add('-----------EVENT-----------');
+           Astrings.Add('');
+           for i := 0 to NumPro - 1 do //获得事件属性的列表
+             Astrings.Add(Format('%s:%s',[Pplst[i]^.Name,Pplst[i]
+
+ ^.PropType^.Name]));
+         end;
+     finally
+        FreeMem(Pplst,sizeof(PpropInfo)*classDataInfo.PropCount);
+     end;
+    end;
+ end;
+
+procedure TForm1.btnInitClick(Sender: TObject);
+ begin
+    //修改label1的caption属性为12345
+    TestCom.Name := edComName.Text;
+    TestCom.PproName := edPproName.Text;
+     TestCom.text := edValue.Text;
+    TestCom.MethodName := 'OnClick';
+    btnModify.Enabled := true;
+ end;
+
+ procedure TForm1.btnModifyClick(Sender: TObject);
+ var
+    pp : PPropInfo;
+    obj : TComponent;
+    a : TMethod;
+    tm : TNotifyEvent;
+ begin
+    obj := FindComponent(TestCom.Name);//通过名字查找此控件
+   if not Assigned(obj) then exit; //如果没有则退出
+   //通过getPropInfo获得指定控件的属性信息，注意，这里只能获得那些公开
+
+ 了的属性
+    pp := GetPropInfo(obj.ClassInfo,TestCom.PproName);
+   if Assigned(pp) then
+    begin
+      //根据kind判断类型是否为string类型
+      case pp^.PropType^.Kind  of
+        //这里使用setStrProp来为string类型的属性赋值，对起来类型的赋值
+
+ ，请参考TypInfo.pas
+        tkString,tkLString,tkWString : SetStrProp
+
+ (obj,TestCom.PproName,TestCom.text);
+      end;
+      //给要修改的控件添加onClick事件，
+      pp := GetPropInfo(obj.ClassInfo,TestCom.MethodName);
+      if Assigned(pp) then
+      begin
+        if pp^.PropType^.Kind = tkMethod then
+        begin
+          tm := MyClick;
+          //Tmethod的code为函数地址，你也可以通过MethodAddress方法获得
+          a.Code := @tm;
+          a.Data := Self;
+          //对时间赋值
+          SetMethodProp(obj,TestCom.MethodName,a);
+        end;
+      end;
+    end;
+ end;
+
+ procedure TForm1.FormCreate(Sender: TObject);
+ begin
+    btnModify.Enabled := false;
+    //给listbox1添加一些类型的类名
+    with ListBox1.Items do
+    begin
+      Add('TApplication');
+      Add('TEdit');
+      Add('TButton');
+      Add('Tmemo');
+      Add('TForm');
+    end;
+
+ end;
+
+ procedure TForm1.ListBox1Click(Sender: TObject);
+ var
+    t : TObject;
+ begin
+    //当在类型列表中选择一个类型并用鼠标单击后，分别得到它的属性信息和
+
+ 基本信息
+     ListBox2.Clear;
+     ListBox3.Clear;
+     t := CreateClass(ListBox1.Items[ListBox1.ItemIndex]);
+     try
+       GetBaseClassInfo(t,ListBox2.Items);
+       GetBaseClassPro(t,ListBox3.Items);
+     finally
+        t.Free;
+     end;
+ end;
+
+ procedure TForm1.MyClick(Sender: TObject);
+ begin
+    //给指定控件添加的一个方法
+    ShowMessage('wudi_1982');
+ end;
+
+ initialization
+    //初始化的时候注册
+    RegisterClasses([TApplication,TButton,TEdit,TMemo,TForm]);
+
+ end.
+  
+
+
+ 
+
+     注：示例程序在winxp+D7以及turbo delphi+winxp下测试通过。Borland文档中不包含将来也许会有版本变化的功能。当使用如RTTI等无文档说明的功能时，就不能保证你的程序可以完全移植到Delphi的未来版本。转载请注明出处！
+
+程序效果图如下：
+
+
+
+        编译、运行程序，你可以通过点击左上角列表框中的类型，获得他们的信息。而在窗体的下部，主要演示了通过读取配置信息来对控件的属性赋值（例程中的配置信息是通过edit输入的，可以在实际运用中改成从配置文件读取）。当使用下半部分功能时，在默认情况下，点击初始化按钮，然后点击修改，你会发现label1的caption变成了12345，并在在鼠标点击的时候会弹出一个对话框，你可以尝试把第一个edit的内容改成bitbtn1试试

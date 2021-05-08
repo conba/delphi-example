@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RgSalaryItems><!--文件列表 （用来配文件对应执行的地区)-->
+	<FileList>
+		<File key="{616CDC5C-84EE-4078-B7D8-CCFA0789C28B}" filename="2020年4月----苏建函(2020)115号">
+			<Item name="江苏省" guid="{3199124F-0F07-44CD-B47D-F3E9E7F2EACB}"/>
+		</File>
+	</FileList>
+	<!--具体规则详细列表 (用来配文件规定下某个地区的具体执行内容)-->
+	<Rules>
+		<Items key="{616CDC5C-84EE-4078-B7D8-CCFA0789C28B}" guid="{3199124F-0F07-44CD-B47D-F3E9E7F2EACB}">
+			<Item lx="1" gclxname="包工包料工程" mbid="1" zymc="建筑" bm="00010202" name="二类工" value="" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="1" zymc="建筑" bm="00010202" name="二类工" value="222" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="1" zymc="建筑" bm="00010201" name="园林一册人工" value="100" bz="222"/>
+		</Items>
+	</Rules>
+	<!--文件来源 value：chm文件相对于主程序的路径-->
+	<FileSource name="文件来源需要显示的chm文件路径" value="\help.chm"/>
+</RgSalaryItems>

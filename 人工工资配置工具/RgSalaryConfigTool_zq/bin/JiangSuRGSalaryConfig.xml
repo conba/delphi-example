@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RgSalaryItems><!--文件列表 （用来配文件对应执行的地区)-->
+	<FileList>
+		<File key="{616CDC5C-84EE-4078-B7D8-CCFA0789C28B}" filename="苏建函【2012】812">
+			<Item name="江苏省" guid="{3199124F-0F07-44CD-B47D-F3E9E7F2EACB}"/>
+		</File>
+	</FileList>
+	<!--具体规则详细列表 (用来配文件规定下某个地区的具体执行内容)-->
+	<Rules>
+		<Items key="{616CDC5C-84EE-4078-B7D8-CCFA0789C28B}" guid="{3199124F-0F07-44CD-B47D-F3E9E7F2EACB}">
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" rglx="4|5|6" rgname="园林一册人工|园林二册人工|园林三册人工" value="100" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="1" zymc="建筑" rglx="0" rgname="一类工" value="70" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="1" zymc="建筑" rglx="1" rgname="二类工" value="67" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" bm="" name="" value="10000000000" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="1" zymc="建筑" rglx="2" rgname="三类工" value="63" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="1" zymc="建筑" rglx="3" rgname="机械人工" value="67" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="2" zymc="装饰" rglx="0|1|2" rgname="一类工|二类工|三类工" value="80" bz="70-90"/>
+			<Item lx="0" gclxname="包工包料工程" mbid="2" zymc="装饰" rglx="3" rgname="机械人工" value="67" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="3" zymc="安装" rglx="0" rgname="一类工" value="63" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="3" zymc="安装" rglx="1" rgname="二类工" value="60" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="3" zymc="安装" rglx="2" rgname="三类工" value="56" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="3" zymc="安装" rglx="3" rgname="机械人工" value="67" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="4" zymc="市政" rglx="0" rgname="一类工" value="63" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="4" zymc="市政" rglx="1" rgname="二类工" value="60" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" rglx="0|1|2|3|4|5|6" rgname="一类工|二类工|三类工|机械人工|园林一册人工|园林二册人工|园林三册人工" value="1000" bz="100-200"/>
+			<Item lx="0" gclxname="包工包料工程" mbid="4" zymc="市政" rglx="2" rgname="三类工" value="56" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="4" zymc="市政" rglx="3" rgname="机械人工" value="67" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="5" zymc="园林" rglx="4" rgname="园林一册人工" value="61" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="5" zymc="园林" rglx="5" rgname="园林二册人工" value="69" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="5" zymc="园林" rglx="6" rgname="园林三册人工" value="58" bz=""/>
+			<Item lx="0" gclxname="包工包料工程" mbid="5" zymc="园林" rglx="3" rgname="机械人工" value="67" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="1" zymc="建筑" rglx="0|1|2" rgname="一类工|二类工|三类工" value="88" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="2" zymc="装饰" rglx="0|1|2" rgname="一类工|二类工|三类工" value="100" bz="90-110"/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="3" zymc="安装" rglx="0|1|2" rgname="一类工|二类工|三类工" value="79" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="4" zymc="市政" rglx="0|1|2" rgname="一类工|二类工|三类工" value="79" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="5" zymc="园林" rglx="4" rgname="园林一册人工" value="81" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="5" zymc="园林" rglx="5" rgname="园林二册人工" value="89" bz=""/>
+			<Item lx="1" gclxname="包工不包料工程" mbid="5" zymc="园林" rglx="6" rgname="园林三册人工" value="81" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="1" zymc="建筑" rglx="0|1|2" rgname="一类工|二类工|三类工" value="73" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="2" zymc="装饰" rglx="0|1|2" rgname="一类工|二类工|三类工" value="77" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="3" zymc="安装" rglx="0|1|2" rgname="一类工|二类工|三类工" value="75" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="4" zymc="市政" rglx="0|1|2" rgname="一类工|二类工|三类工" value="75" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" rglx="4" rgname="园林一册人工" value="67" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" rglx="5" rgname="园林二册人工" value="73" bz=""/>
+			<Item lx="2" gclxname="点工" mbid="5" zymc="园林" rglx="6" rgname="园林三册人工" value="67" bz=""/>
+		</Items>
+	</Rules>
+	<!--人工对应的编码列表-->
+	<BmList>
+		<Items name="一类工" rglx="0">
+			<item bm="00010201"/>
+			<item bm="00010202"/>
+			<item bm="00010203"/>
+			<item bm="00010204"/>
+		</Items>
+		<Items name="二类工" rglx="1">
+			<item bm="00010301"/>
+			<item bm="00010302"/>
+			<item bm="00010302~1"/>
+			<item bm="00010303"/>
+			<item bm="00010304"/>
+			<item bm="00010304-2"/>
+		</Items>
+		<Items name="三类工" rglx="2">
+			<item bm="00010401"/>
+			<item bm="00010403"/>
+		</Items>
+		<Items name="机械人工" rglx="3">
+			<item bm="000020"/>
+			<item bm="00010300"/>
+			<item bm="J0009"/>
+		</Items>
+		<Items name="园林一册人工" rglx="4">
+			<item bm="RG0001"/>
+		</Items>
+		<Items name="园林二册人工" rglx="5">
+			<item bm="RG0002"/>
+		</Items>
+		<Items name="园林三册人工" rglx="6">
+			<item bm="RG0003"/>
+		</Items>
+	</BmList>
+	<!--文件来源 value：chm文件相对于主程序的路径-->
+	<FileSource name="文件来源需要显示的chm文件路径" value="\help.chm"/>
+</RgSalaryItems>

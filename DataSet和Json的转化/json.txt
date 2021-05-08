@@ -1,0 +1,1 @@
+"Cols":[{"JsonType":"integer","FieldIndex":0,"FieldType":"Integer","FieldSize":0,"FieldName":"ID","Required":false},{"JsonType":"string","FieldIndex":1,"FieldType":"String","FieldSize":100,"FieldName":"Title","Required":false},{"JsonType":"variant","FieldIndex":2,"FieldType":"Blob","FieldSize":0,"FieldName":"Picture","Required":false}]

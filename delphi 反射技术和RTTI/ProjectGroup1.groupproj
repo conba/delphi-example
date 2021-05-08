@@ -1,0 +1,60 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{73CF0FFB-4319-4FE4-BB18-F9B4F817069F}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="rtti\RTTI.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="反射\Project1.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="获取类的属性方法等信息\Project2.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="RTTI">
+			<MSBuild Projects="rtti\RTTI.dproj"/>
+		</Target>
+		<Target Name="RTTI:Clean">
+			<MSBuild Projects="rtti\RTTI.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="RTTI:Make">
+			<MSBuild Projects="rtti\RTTI.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Project1">
+			<MSBuild Projects="反射\Project1.dproj"/>
+		</Target>
+		<Target Name="Project1:Clean">
+			<MSBuild Projects="反射\Project1.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="Project1:Make">
+			<MSBuild Projects="反射\Project1.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Project2">
+			<MSBuild Projects="获取类的属性方法等信息\Project2.dproj"/>
+		</Target>
+		<Target Name="Project2:Clean">
+			<MSBuild Projects="获取类的属性方法等信息\Project2.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="Project2:Make">
+			<MSBuild Projects="获取类的属性方法等信息\Project2.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="RTTI;Project1;Project2"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="RTTI:Clean;Project1:Clean;Project2:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="RTTI:Make;Project1:Make;Project2:Make"/>
+		</Target>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
+	</Project>

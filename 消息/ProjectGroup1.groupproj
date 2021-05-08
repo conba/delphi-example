@@ -1,0 +1,72 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{B08A746D-578E-41D4-8811-7FA15D44F5BD}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="官方示例\testMessage.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="简单消息\Message1.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="WM_MouseMove\Project1.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="LeftButtonDown\LeftButtonDown.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="testMessage">
+			<MSBuild Projects="官方示例\testMessage.dproj"/>
+		</Target>
+		<Target Name="testMessage:Clean">
+			<MSBuild Projects="官方示例\testMessage.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="testMessage:Make">
+			<MSBuild Projects="官方示例\testMessage.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Message1">
+			<MSBuild Projects="简单消息\Message1.dproj"/>
+		</Target>
+		<Target Name="Message1:Clean">
+			<MSBuild Projects="简单消息\Message1.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="Message1:Make">
+			<MSBuild Projects="简单消息\Message1.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Project1">
+			<MSBuild Projects="WM_MouseMove\Project1.dproj"/>
+		</Target>
+		<Target Name="Project1:Clean">
+			<MSBuild Projects="WM_MouseMove\Project1.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="Project1:Make">
+			<MSBuild Projects="WM_MouseMove\Project1.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="LeftButtonDown">
+			<MSBuild Projects="LeftButtonDown\LeftButtonDown.dproj"/>
+		</Target>
+		<Target Name="LeftButtonDown:Clean">
+			<MSBuild Projects="LeftButtonDown\LeftButtonDown.dproj" Targets="Clean"/>
+		</Target>
+		<Target Name="LeftButtonDown:Make">
+			<MSBuild Projects="LeftButtonDown\LeftButtonDown.dproj" Targets="Make"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="testMessage;Message1;Project1;LeftButtonDown"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="testMessage:Clean;Message1:Clean;Project1:Clean;LeftButtonDown:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="testMessage:Make;Message1:Make;Project1:Make;LeftButtonDown:Make"/>
+		</Target>
+		<Import Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')" Project="$(BDS)\Bin\CodeGear.Group.Targets"/>
+	</Project>

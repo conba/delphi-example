@@ -1,0 +1,62 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  Caption = 'Form1'
+  ClientHeight = 300
+  ClientWidth = 635
+  Color = clBtnFace
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  OldCreateOrder = False
+  PixelsPerInch = 96
+  TextHeight = 13
+  object pnl1: TPanel
+    Left = 0
+    Top = 0
+    Width = 635
+    Height = 300
+    Align = alClient
+    BevelInner = bvRaised
+    BevelOuter = bvLowered
+    Caption = 'pnl1'
+    TabOrder = 0
+    ExplicitLeft = 432
+    ExplicitTop = 112
+    ExplicitWidth = 185
+    ExplicitHeight = 41
+    object PMTreeList1: TPMTreeList
+      Left = 2
+      Top = 2
+      Width = 631
+      Height = 296
+      Align = alClient
+      Bands = <>
+      DefaultRowHeight = 20
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = #23435#20307
+      Font.Style = []
+      Navigator.Buttons.CustomButtons = <>
+      OptionsBehavior.ExpandOnDblClick = False
+      OptionsCustomizing.ColumnVertSizing = False
+      OptionsData.Deleting = False
+      ParentFont = False
+      TabOrder = 0
+      BookMark = False
+      CanEditOpration = True
+      ShowIndicatorRowIndex = False
+      ExplicitWidth = 633
+      ExplicitHeight = 298
+    end
+  end
+  object PMEditRepository1: TPMEditRepository
+    Left = 336
+    Top = 104
+    object PMEditRepository1ImageItem1: TcxEditRepositoryImageItem
+    end
+  end
+end
